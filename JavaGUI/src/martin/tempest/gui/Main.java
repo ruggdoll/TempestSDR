@@ -204,7 +204,8 @@ public class Main implements TSDRLibrary.FrameReadyCallback, TSDRLibrary.Incomin
 		frmTempestSdr.setFocusable(true);
 		frmTempestSdr.setFocusableWindowState(true);
 		frmTempestSdr.addKeyListener(keyhook);
-		frmTempestSdr.setResizable(false);
+		frmTempestSdr.setResizable(true);
+		frmTempestSdr.setMinimumSize(new java.awt.Dimension(810, 632));
 		frmTempestSdr.setTitle("TempestSDR");
 		frmTempestSdr.setBounds(100, 100, 810, 632);
 		frmTempestSdr.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -214,6 +215,35 @@ public class Main implements TSDRLibrary.FrameReadyCallback, TSDRLibrary.Incomin
 				frmTempestSdr.requestFocus();
 			}
 		});
+	frmTempestSdr.addComponentListener(new java.awt.event.ComponentAdapter() {
+		@Override
+			public void componentResized(java.awt.event.ComponentEvent e) {
+				// Récupérer la nouvelle taille de la fenêtre
+				int frameWidth = frmTempestSdr.getWidth();
+				int frameHeight = frmTempestSdr.getHeight();
+		
+				// Ajuster la taille du visualizer (en gardant une marge à droite pour les contrôles)
+				int newVisualizerWidth = Math.max(530, frameWidth - 280);
+				int newVisualizerHeight = Math.max(346, frameHeight - 286);
+				visualizer.setBounds(10, 33, newVisualizerWidth, newVisualizerHeight);
+		
+				// Ajuster la position du visualiseur d'échelle automatique
+				autoScaleVisualizer.setBounds(newVisualizerWidth + 10, 33, 25, newVisualizerHeight);
+		
+				// Ajuster la largeur des plotters
+				int plotterWidth = Math.max(727, frameWidth - 83);
+				line_plotter.setBounds(10, frameHeight - 134, plotterWidth, 95);
+				frame_plotter.setBounds(10, frameHeight - 241, plotterWidth, 95);
+		
+				// Ajuster la position des boutons de contrôle des plotters
+				btnReset.setBounds(plotterWidth + 12, frameHeight - 215, 41, 22);
+				tglbtnAutocorrPlots.setBounds(plotterWidth + 12, frameHeight - 190, 41, 22);
+				spAreaAroundMouse.setBounds(plotterWidth + 12, frameHeight - 166, 41, 20);
+				tglbtnDmp.setBounds(plotterWidth + 12, frameHeight - 134, 41, 22);
+				btnAutoResolution.setBounds(plotterWidth + 12, frameHeight - 61, 41, 22);
+				lblFrames.setBounds(plotterWidth + 5, frameHeight - 242, 48, 15);
+			}
+		});		
 		
 		visualizer = new ImageVisualizer();
 		visualizer.setBounds(10, 33, 530, 346);
