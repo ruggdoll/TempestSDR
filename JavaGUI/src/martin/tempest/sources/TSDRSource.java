@@ -38,6 +38,7 @@ public class TSDRSource {
 	private final static TSDRSource[] SOURCES = new TSDRSource[] {
 		new TSDRFileSource(),
 		new TSDRMiricsSource(),
+		new TSDRHackRFSource(),
 		new TSDRUHDSource(),
 		new TSDRExtIOSource(),
 		new TSDRSDRPlaySource(),

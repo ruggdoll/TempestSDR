@@ -1,0 +1,16 @@
+TSDRPlugin_HackRF
+-----------------
+
+This plugin adds support for HackRF devices using libhackrf.
+
+Dependencies (Linux):
+  - libhackrf-dev
+
+Build:
+  make all
+
+Optional parameters (space separated):
+  samplerate=<Hz>  freq=<Hz>  gain=<0.0-1.0>  amp=<0|1>  bandwidth=<Hz>
+
+Example:
+  samplerate=8000000 freq=200000000 gain=0.6 amp=0
