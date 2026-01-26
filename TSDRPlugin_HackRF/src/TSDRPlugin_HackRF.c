@@ -29,7 +29,7 @@
 	static void thread_sleep(uint32_t milliseconds) { usleep(1000 * milliseconds); }
 #endif
 
-#define DEFAULT_SAMPLE_RATE (8000000)
+#define DEFAULT_SAMPLE_RATE (20000000)
 #define DEFAULT_FREQ (200000000)
 #define DEFAULT_GAIN (0.5f)
 
