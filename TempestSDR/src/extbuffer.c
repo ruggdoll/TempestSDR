@@ -45,21 +45,29 @@ void extbuffer_init_double(extbuffer_t * container) {
 }
 
 void extbuffer_preparetohandle(extbuffer_t * container, uint32_t size) {
-	assert (size > 0);
+	if (size == 0) return;
 
 	if (container->buffer_max_size < size || container->buffer_max_size > (size << 1)) {
 		if (container->type == EXTBUFFER_TYPE_FLOAT) {
 			if (container->buffer == NULL) {
 				container->buffer = (float *) malloc(sizeof(float) * size);
+				if (container->buffer == NULL) return;
 				container->valid = 1;
-			} else if (container->buffer_max_size != size)
-				container->buffer = (float *) realloc((void *) container->buffer, sizeof(float) * size);
+			} else if (container->buffer_max_size != size) {
+				float *tmp = (float *) realloc((void *) container->buffer, sizeof(float) * size);
+				if (tmp == NULL) return;
+				container->buffer = tmp;
+			}
 		} else if (container->type == EXTBUFFER_TYPE_DOUBLE) {
 			if (container->dbuffer == NULL) {
 				container->dbuffer = (double *) malloc(sizeof(double) * size);
+				if (container->dbuffer == NULL) return;
 				container->valid = 1;
-			} else if (container->buffer_max_size != size)
-				container->dbuffer = (double *) realloc((void *) container->dbuffer, sizeof(double) * size);
+			} else if (container->buffer_max_size != size) {
+				double *tmp = (double *) realloc((void *) container->dbuffer, sizeof(double) * size);
+				if (tmp == NULL) return;
+				container->dbuffer = tmp;
+			}
 		}
 		container->buffer_max_size = size;
 	}
@@ -106,6 +114,7 @@ void extbuffer_dumptofile(extbuffer_t * container, int offset, char * filename, 
 	FILE *f = NULL;
 
 	f = fopen(filename, "w");
+	if (f == NULL) return;
 
 	fprintf(f, "%s, %s\n", xname, yname);
 

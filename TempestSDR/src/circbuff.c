@@ -42,6 +42,7 @@ void cb_init(CircBuff_t * cb, int max_size_coeff) {
     cb->desired_buf_size = cb->size_coeff; // initial size of buffer
     cb->buffer_size = cb->desired_buf_size;
     cb->buffer = (float *) malloc(sizeof(float) * cb->buffer_size); // allocate buffer
+    if (cb->buffer == NULL) { cb->invalid = 1; return; }
     cb->remaining_capacity = cb->buffer_size; // how many elements could be loaded
     cb->pos = 0; // where the next element will be added
     cb->rempos = 0; // where the next element will be taken from
@@ -76,7 +77,9 @@ int cb_add(CircBuff_t * cb, float * in, const size_t len) {
     	const size_t inflation = cb->desired_buf_size - cb->buffer_size;
 
         // if we need to resize the buffer, reset it
-        cb->buffer = (float *) realloc((void *) cb->buffer, sizeof(float) * cb->desired_buf_size); // reallocate
+        float *tmp = (float *) realloc((void *) cb->buffer, sizeof(float) * cb->desired_buf_size);
+        if (tmp == NULL) { critical_leave(&cb->mutex); return CB_ERROR; }
+        cb->buffer = tmp;
 
         if (cb->rempos >= cb->pos) {
         	memmove((void *) &cb->buffer[cb->rempos+inflation], (void *) &cb->buffer[cb->rempos], sizeof(float) * (cb->buffer_size-cb->rempos));

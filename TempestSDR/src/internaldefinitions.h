@@ -25,7 +25,16 @@
 #include <stdlib.h>
 #include <stddef.h>
 
-#define MALLOC_OR_REALLOC(buffer, size, type) ((buffer == NULL) ? ((type *) malloc(size*sizeof(type))) : ((type *) realloc((void *) buffer, size*sizeof(type))))
+static inline void * safe_malloc_or_realloc(void *buffer, size_t size) {
+	if (buffer == NULL)
+		return malloc(size);
+	else {
+		void *tmp = realloc(buffer, size);
+		if (tmp == NULL) return buffer;
+		return tmp;
+	}
+}
+#define MALLOC_OR_REALLOC(buffer, size, type) ((type *) safe_malloc_or_realloc((void *)(buffer), (size)*sizeof(type)))
 
 	struct tsdr_lib {
 		pluginsource_t plugin;

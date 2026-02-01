@@ -156,7 +156,7 @@ float * dsp_post_process(tsdr_lib_t * tsdr, dsp_postprocess_t * pp, float * buff
 		pp->height = nowheight;
 		pp->width = nowwidth;
 		pp->sizetopoll = pp->height * pp->width;
-		assert(pp->sizetopoll > 0);
+		if (pp->sizetopoll <= 0) return buffer;
 
 		if (pp->sizetopoll > pp->bufsize) {
 			pp->bufsize = pp->sizetopoll;
@@ -333,7 +333,7 @@ void dsp_dropped_compensation_add(dsp_dropped_compensation_t * res, CircBuff_t *
 	* By dropping a multiple of `block` elements, we can keep synchronisation with the incoming stream.
 	*/
 
-	assert(res->difference >= 0);
+	if (res->difference < 0) res->difference = 0;
 
 	if (size <= res->difference)
 		res->difference -= size;
@@ -346,7 +346,7 @@ void dsp_dropped_compensation_add(dsp_dropped_compensation_t * res, CircBuff_t *
 }
 
 int dsp_dropped_compensation_will_drop_all(dsp_dropped_compensation_t * res, uint32_t size, uint32_t block) {
-	assert(res->difference >= 0);
+	if (res->difference < 0) res->difference = 0;
 
 	return size <= res->difference;
 }

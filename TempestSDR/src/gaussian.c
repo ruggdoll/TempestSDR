@@ -14,18 +14,21 @@
 #define GAUSSIAN_ALPHA (1.0f)
 
 // N is the number of points, i is between -(N-1)/2 and (N-1)/2 inclusive
-#define CALC_GAUSSCOEFF(N,i) expf(-2.0f*GAUSSIAN_ALPHA*GAUSSIAN_ALPHA*i*i/(N*N))
+#define CALC_GAUSSCOEFF(N,i) expf(-2.0f*GAUSSIAN_ALPHA*GAUSSIAN_ALPHA*(i)*(i)/((N)*(N)))
+
+// Pre-computed Gaussian coefficients for N=5
+#define GAUSS_RAW_C2  0.726149f  // exp(-2*1*4/25) = exp(-0.32)
+#define GAUSS_RAW_C1  0.923116f  // exp(-2*1*1/25) = exp(-0.08)
+#define GAUSS_RAW_C0  1.000000f  // exp(0)
+#define GAUSS_NORM    (GAUSS_RAW_C2 + GAUSS_RAW_C1 + GAUSS_RAW_C0 + GAUSS_RAW_C1 + GAUSS_RAW_C2)
+
+static const float c_2 = GAUSS_RAW_C2 / GAUSS_NORM;
+static const float c_1 = GAUSS_RAW_C1 / GAUSS_NORM;
+static const float c0  = GAUSS_RAW_C0 / GAUSS_NORM;
+static const float c1  = GAUSS_RAW_C1 / GAUSS_NORM;
+static const float c2  = GAUSS_RAW_C2 / GAUSS_NORM;
+
 void gaussianblur(float * data, int size) {
-	static float norm = 0.0f, c_2 = 0.0f, c_1 = 0.0f, c0 = 0.0f, c1 = 0.0f, c2 = 0.0f;
-	if (norm == 0.0f) {
-		// calculate only first time we run
-		norm = CALC_GAUSSCOEFF(5,-2)+CALC_GAUSSCOEFF(5, -1)+CALC_GAUSSCOEFF(5, 0)+CALC_GAUSSCOEFF(5, 1)+CALC_GAUSSCOEFF(5, 2);
-		c_2 = CALC_GAUSSCOEFF(5, -2) / norm;
-		c_1 = CALC_GAUSSCOEFF(5, -1) / norm;
-		c0 = CALC_GAUSSCOEFF(5, 0) / norm;
-		c1 = CALC_GAUSSCOEFF(5, 1) / norm;
-		c2 = CALC_GAUSSCOEFF(5, 2) / norm;
-	}
 
 	float p_2, p_1, p0, p1, p2, data_2, data_3, data_4;
 	if (size < 5) {

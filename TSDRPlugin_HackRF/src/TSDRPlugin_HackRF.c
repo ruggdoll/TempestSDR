@@ -67,13 +67,16 @@ static inline void announceexception(const char * message, int status) {
 
 	const int length = strlen(message);
 	if (errormsg_size == 0) {
-			errormsg_size = length;
-			errormsg = (char *) malloc(length+1);
-		} else if (length > errormsg_size) {
-			errormsg_size = length;
-			errormsg = (char *) realloc((void*) errormsg, length+1);
-		}
-	strcpy(errormsg, message);
+		errormsg = (char *) malloc(length+1);
+		if (errormsg == NULL) return;
+		errormsg_size = length;
+	} else if (length > errormsg_size) {
+		char *tmp = (char *) realloc((void*) errormsg, length+1);
+		if (tmp == NULL) return;
+		errormsg = tmp;
+		errormsg_size = length;
+	}
+	memcpy(errormsg, message, length + 1);
 }
 
 static float clampf(float val, float minval, float maxval) {
@@ -207,7 +210,8 @@ char TSDRPLUGIN_API __stdcall * tsdrplugin_getlasterrortext(void) {
 }
 
 void TSDRPLUGIN_API __stdcall tsdrplugin_getName(char * name) {
-	strcpy(name, "TSDR HackRF Plugin");
+	strncpy(name, "TSDR HackRF Plugin", 199);
+	name[199] = '\0';
 }
 
 uint32_t TSDRPLUGIN_API __stdcall tsdrplugin_setsamplerate(uint32_t rate) {
@@ -224,21 +228,18 @@ int TSDRPLUGIN_API __stdcall tsdrplugin_setbasefreq(uint32_t freq) {
 	desired_freq = freq;
 	if (device != NULL) apply_freq();
 	RETURN_OK();
-	return 0; // to avoid getting warning from stupid Eclpse
 }
 
 int TSDRPLUGIN_API __stdcall tsdrplugin_stop(void) {
 	working = 0;
 	if (device != NULL) hackrf_stop_rx(device);
 	RETURN_OK();
-	return 0; // to avoid getting warning from stupid Eclpse
 }
 
 int TSDRPLUGIN_API __stdcall tsdrplugin_setgain(float gain) {
 	desired_gain = clampf(gain, 0.0f, 1.0f);
 	if (device != NULL) apply_gain();
 	RETURN_OK();
-	return 0; // to avoid getting warning from stupid Eclpse
 }
 
 int TSDRPLUGIN_API __stdcall tsdrplugin_init(const char * params) {
@@ -251,7 +252,6 @@ int TSDRPLUGIN_API __stdcall tsdrplugin_init(const char * params) {
 	}
 
 	RETURN_OK();
-	return 0; // to avoid getting warning from stupid Eclpse
 }
 
 int TSDRPLUGIN_API __stdcall tsdrplugin_readasync(tsdrplugin_readasync_function cb, void *ctx) {
@@ -290,7 +290,6 @@ int TSDRPLUGIN_API __stdcall tsdrplugin_readasync(tsdrplugin_readasync_function 
 	cleanup_device();
 
 	RETURN_OK();
-	return 0; // to avoid getting warning from stupid Eclpse
 }
 
 void TSDRPLUGIN_API __stdcall tsdrplugin_cleanup(void) {

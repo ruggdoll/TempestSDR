@@ -40,13 +40,16 @@ static inline void announceexception(const char * message, int status) {
 
 	const int length = strlen(message);
 	if (errormsg_size == 0) {
-			errormsg_size = length;
-			errormsg = (char *) malloc(length+1);
-		} else if (length > errormsg_size) {
-			errormsg_size = length;
-			errormsg = (char *) realloc((void*) errormsg, length+1);
-		}
-	strcpy(errormsg, message);
+		errormsg = (char *) malloc(length+1);
+		if (errormsg == NULL) return;
+		errormsg_size = length;
+	} else if (length > errormsg_size) {
+		char *tmp = (char *) realloc((void*) errormsg, length+1);
+		if (tmp == NULL) return;
+		errormsg = tmp;
+		errormsg_size = length;
+	}
+	memcpy(errormsg, message, length + 1);
 }
 
 char TSDRPLUGIN_API __stdcall * tsdrplugin_getlasterrortext(void) {
@@ -57,7 +60,8 @@ char TSDRPLUGIN_API __stdcall * tsdrplugin_getlasterrortext(void) {
 }
 
 void TSDRPLUGIN_API __stdcall tsdrplugin_getName(char * name) {
-	strcpy(name, "TSDR Mirics SDR Plugin");
+	strncpy(name, "TSDR Mirics SDR Plugin", 199);
+	name[199] = '\0';
 }
 
 uint32_t TSDRPLUGIN_API __stdcall tsdrplugin_setsamplerate(uint32_t rate) {
@@ -111,6 +115,11 @@ int TSDRPLUGIN_API __stdcall tsdrplugin_readasync(tsdrplugin_readasync_function 
 
 	int outbufsize =  2 * sps * SAMPLES_TO_PROCESS_AT_ONCE;
 	float * outbuf = (float *) malloc(sizeof(float) * outbufsize);
+	if (xi == NULL || xq == NULL || outbuf == NULL) {
+		free(xi); free(xq); free(outbuf);
+		mir_sdr_Uninit();
+		RETURN_EXCEPTION("Out of memory", TSDR_ERR_PLUGIN);
+	}
 
 	while (working) {
 		unsigned int dropped = 0;

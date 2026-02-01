@@ -84,7 +84,8 @@ void closeextio(void) {
 }
 
 void TSDRPLUGIN_API __stdcall tsdrplugin_getName(char * name) {
-	strcpy(name, "TSDR ExtIO Plugin");
+	strncpy(name, "TSDR ExtIO Plugin", 199);
+	name[199] = '\0';
 }
 
 uint32_t TSDRPLUGIN_API __stdcall tsdrplugin_setsamplerate(uint32_t rate) {
@@ -174,8 +175,8 @@ DWORD WINAPI doGuiStuff(LPVOID arg) {
 
 	int status;
 	if ((status = extio_load(source, params)) == TSDR_OK) {
-		char name[200];
-		char model[200];
+		char name[200] = {0};
+		char model[200] = {0};
 
 		if (source->InitHW(name, model, &hwtype)) {
 			source->SetCallback(&callback);

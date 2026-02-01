@@ -67,6 +67,7 @@ void dump_autocorrect(extbuffer_t * rawiq, double samplerate) {
 	FILE *f = NULL;
 
 	f = fopen("autocorr.csv", "w");
+	if (f == NULL) return;
 
 	fprintf(f, "%s, %s\n", "ms", "dB");
 
@@ -165,7 +166,13 @@ void frameratedetector_thread(void * ctx) {
 
 		if (desiredsize > bufsize) {
 			bufsize = desiredsize;
-			if (buf == NULL) buf = malloc(sizeof(float) * bufsize); else buf = realloc(buf, sizeof(float) * bufsize);
+			if (buf == NULL) {
+				buf = malloc(sizeof(float) * bufsize);
+			} else {
+				float *tmp = realloc(buf, sizeof(float) * bufsize);
+				if (tmp != NULL) buf = tmp;
+			}
+			if (buf == NULL) { thread_sleep(10); continue; }
 		}
 
 		if (frameratedetector->purge_buffers) {

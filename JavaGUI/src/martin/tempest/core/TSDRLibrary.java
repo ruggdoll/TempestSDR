@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import martin.tempest.core.exceptions.TSDRAlreadyRunningException;
 import martin.tempest.core.exceptions.TSDRException;
@@ -60,9 +61,9 @@ public class TSDRLibrary {
 	private static TSDRLibraryNotCompatible m_e = null;
 	
 	/** A list of all of the callbacks that will receive a frame when it is ready */
-	private final List<FrameReadyCallback> callbacks = new ArrayList<FrameReadyCallback>();
-	
-	private final List<IncomingValueCallback> value_callbacks = new ArrayList<IncomingValueCallback>();
+	private final List<FrameReadyCallback> callbacks = new CopyOnWriteArrayList<FrameReadyCallback>();
+
+	private final List<IncomingValueCallback> value_callbacks = new CopyOnWriteArrayList<IncomingValueCallback>();
 	
 	/**
 	 * Returns a OS specific library filename. If you supply "abc" on Windows, this function
@@ -151,12 +152,11 @@ public class TSDRLibrary {
 			}
 			
 			temp.deleteOnExit();
-			final FileOutputStream fos = new FileOutputStream(temp);
-
-			while((read = in.read(buffer)) != -1) {
-				fos.write(buffer, 0, read);
+			try (FileOutputStream fos = new FileOutputStream(temp)) {
+				while((read = in.read(buffer)) != -1) {
+					fos.write(buffer, 0, read);
+				}
 			}
-			fos.close();
 			in.close();
 			
 			if (!temp.exists())

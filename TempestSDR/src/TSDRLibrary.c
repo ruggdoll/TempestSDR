@@ -63,6 +63,7 @@ void tsdr_init(tsdr_lib_t ** tsdr, tsdr_value_changed_callback callback, tsdr_on
 	int i;
 
 	*tsdr = (tsdr_lib_t *) malloc(sizeof(tsdr_lib_t));
+	if (*tsdr == NULL) return;
 
 	(*tsdr)->nativerunning = 0;
 	(*tsdr)->running = 0;
@@ -142,13 +143,16 @@ static inline void announceexception(tsdr_lib_t * tsdr, const char * message, in
 
 	const int length = strlen(message);
 	if (tsdr->errormsg_size == 0) {
-		tsdr->errormsg_size = length;
 		tsdr->errormsg = (char *) malloc(length+1);
-	} else if (length > tsdr->errormsg_size) {
+		if (tsdr->errormsg == NULL) return;
 		tsdr->errormsg_size = length;
-		tsdr->errormsg = (char *) realloc((void*) tsdr->errormsg, length+1);
+	} else if (length > tsdr->errormsg_size) {
+		char *tmp = (char *) realloc((void*) tsdr->errormsg, length+1);
+		if (tmp == NULL) return;
+		tsdr->errormsg = tmp;
+		tsdr->errormsg_size = length;
 	}
-	strcpy(tsdr->errormsg, message);
+	memcpy(tsdr->errormsg, message, length + 1);
 }
 
  char * tsdr_getlasterrortext(tsdr_lib_t * tsdr) {
@@ -188,8 +192,6 @@ static inline void announceexception(tsdr_lib_t * tsdr, const char * message, in
 	set_internal_samplerate(tsdr, tsdr->samplerate_real);
 
 	RETURN_OK(tsdr);
-
-	return 0; // to avoid getting warning from stupid Eclpse
 }
 
  int tsdr_setbasefreq(tsdr_lib_t * tsdr, uint32_t freq) {
@@ -200,8 +202,6 @@ static inline void announceexception(tsdr_lib_t * tsdr, const char * message, in
 		RETURN_PLUGIN_RESULT(tsdr, tsdr->plugin, tsdr->plugin.tsdrplugin_setbasefreq(tsdr->centfreq))
 	} else
 		RETURN_OK(tsdr);
-
-	return 0; // to avoid getting warning from stupid Eclpse
 }
 
 
@@ -219,8 +219,6 @@ void shiftfreq(tsdr_lib_t * tsdr, int32_t diff) {
 	mutex_signal(&tsdr->stopsync);
 
 	RETURN_PLUGIN_RESULT(tsdr, tsdr->plugin, status);
-
-	return 0; // to avoid getting warning from stupid Eclpse
 }
 
  int tsdr_setgain(tsdr_lib_t * tsdr, float gain) {
@@ -232,8 +230,6 @@ void shiftfreq(tsdr_lib_t * tsdr, int32_t diff) {
 		RETURN_PLUGIN_RESULT(tsdr, tsdr->plugin, tsdr->plugin.tsdrplugin_setgain(gain))
 	else
 		RETURN_OK(tsdr);
-
-	return 0; // to avoid getting warning from stupid Eclpse
 }
 
 // bresenham algorithm
@@ -430,8 +426,6 @@ int tsdr_unloadplugin(tsdr_lib_t * tsdr) {
 
 	unloadplugin(tsdr);
 	RETURN_OK(tsdr);
-
-	return 0; // to avoid getting warning from stupid Eclpse
 }
 
 int tsdr_loadplugin(tsdr_lib_t * tsdr, const char * pluginfilepath, const char * params) {
@@ -451,8 +445,6 @@ int tsdr_loadplugin(tsdr_lib_t * tsdr, const char * pluginfilepath, const char *
 		}
 	}
 
-	char blah[200];
-	tsdr->plugin.tsdrplugin_getName(blah);
 	if ((status = tsdr->plugin.tsdrplugin_init(params)) != TSDR_OK) {
 		announceexception(tsdr,tsdr->plugin.tsdrplugin_getlasterrortext(),status);
 		unloadplugin(tsdr);
@@ -460,8 +452,6 @@ int tsdr_loadplugin(tsdr_lib_t * tsdr, const char * pluginfilepath, const char *
 	}
 
 	RETURN_OK(tsdr);
-
-	return 0; // to avoid getting warning from stupid Eclpse
 }
 
  int tsdr_readasync(tsdr_lib_t * tsdr, tsdr_readasync_function cb, void * ctx) {
@@ -498,6 +488,11 @@ int tsdr_loadplugin(tsdr_lib_t * tsdr, const char * pluginfilepath, const char *
 	if (tsdr->pixeltimeoversampletime <= 0) goto end;
 
 	tsdr_context_t * context = (tsdr_context_t *) malloc(sizeof(tsdr_context_t));
+	if (context == NULL) {
+		status = TSDR_ERR_MEMORY;
+		announceexception(tsdr, "Out of memory allocating context", TSDR_ERR_MEMORY);
+		goto end;
+	}
 	context->this = tsdr;
 	context->cb = cb;
 	context->ctx = ctx;
@@ -520,11 +515,11 @@ int tsdr_loadplugin(tsdr_lib_t * tsdr, const char * pluginfilepath, const char *
 
 	tsdr->running = 0;
 	mutex_waitforever(&tsdr->stopsync);
-	free(context);
 
 	cb_free(&context->circbuf_posproc_to_video);
 	cb_free(&context->circbuf_decimation_to_posproc);
 	cb_free(&context->circbuf_device_to_decimation);
+	free(context);
 
 end:
 	if (pluginsfault) announceexception(tsdr,tsdr->plugin.tsdrplugin_getlasterrortext(),status);
@@ -560,8 +555,6 @@ end:
 		set_internal_samplerate(tsdr, tsdr->samplerate);
 
 	RETURN_OK(tsdr);
-
-	return 0; // to avoid getting warning from stupid Eclpse
 }
 
 
@@ -569,8 +562,6 @@ end:
 	if (coeff < 0.0f || coeff > 1.0f) return TSDR_WRONG_VIDEOPARAMS;
 	tsdr->motionblur = coeff;
 	RETURN_OK(tsdr);
-
-	return 0; // to avoid getting warning from stupid Eclpse
 }
 
  int tsdr_sync(tsdr_lib_t * tsdr, int pixels, int direction) {
@@ -597,8 +588,6 @@ end:
 		break;
 	}
 	RETURN_OK(tsdr);
-
-	return 0; // to avoid getting warning from stupid Eclpse
 }
 
 int tsdr_setparameter_int(tsdr_lib_t * tsdr, int parameter, uint32_t value) {
@@ -606,15 +595,11 @@ int tsdr_setparameter_int(tsdr_lib_t * tsdr, int parameter, uint32_t value) {
 		RETURN_EXCEPTION(tsdr, "Invalid integer parameter id", TSDR_INVALID_PARAMETER);
 	tsdr->params_int[parameter] = value;
 	RETURN_OK(tsdr);
-
-	return 0; // to avoid getting warning from stupid Eclpse
 }
 
 int tsdr_setparameter_double(tsdr_lib_t * tsdr, int parameter, double value) {
 	if (parameter < 0 || parameter >= COUNT_PARAM_DOUBLE)
 		RETURN_EXCEPTION(tsdr, "Invalid double floating point parameter id", TSDR_INVALID_PARAMETER);
-	printf("Parameter %d to double value %f\n", parameter, value); fflush(stdout);
+	tsdr->params_double[parameter] = value;
 	RETURN_OK(tsdr);
-
-	return 0; // to avoid getting warning from stupid Eclpse
 }

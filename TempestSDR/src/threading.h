@@ -25,8 +25,8 @@
 	typedef void(*thread_function)(void *ctx);
 
 	struct mutex {
-		void * thing1;
-		void * thing2;
+		void * handle;
+		void * condition;
 		volatile int valid;
 	} typedef mutex_t;
 

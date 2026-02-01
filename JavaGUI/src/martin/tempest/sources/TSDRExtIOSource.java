@@ -20,6 +20,7 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
+import javax.swing.SwingUtilities;
 
 /**
  * The ExtIO file source is a plugin that will load a ExtIO__.dll on Windows. The dll needs to be in the same folder
@@ -81,9 +82,9 @@ public class TSDRExtIOSource extends TSDRSource {
 			public void actionPerformed(ActionEvent arg0) {
 				new Thread() {
 					public void run() {
-						ok.setEnabled(false);
+						SwingUtilities.invokeLater(() -> ok.setEnabled(false));
 						setParams(availableplugins.get(options.getSelectedIndex()).getAbsolutePath());
-						ok.setEnabled(true);
+						SwingUtilities.invokeLater(() -> ok.setEnabled(true));
 					};
 				}.start();
 			}
@@ -110,10 +111,10 @@ public class TSDRExtIOSource extends TSDRSource {
 			public void actionPerformed(ActionEvent arg0) {
 				new Thread() {
 					public void run() {
-						ok.setEnabled(false);
+						SwingUtilities.invokeLater(() -> ok.setEnabled(false));
 						if (fc.showOpenDialog(cont) == JFileChooser.APPROVE_OPTION)
 							setParams(fc.getSelectedFile().getAbsolutePath());
-						ok.setEnabled(true);
+						SwingUtilities.invokeLater(() -> ok.setEnabled(true));
 					};
 				}.start();
 			}

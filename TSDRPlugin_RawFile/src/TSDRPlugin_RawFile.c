@@ -46,7 +46,7 @@ int type = -1;
 int sizepersample = -1;
 
 uint32_t samplerate = 0;
-char filename[300];
+char *filename = NULL;
 
 #if !WINHEAD
 #include <unistd.h>
@@ -72,13 +72,16 @@ static inline void announceexception(const char * message, int status) {
 
 	const int length = strlen(message);
 	if (errormsg_size == 0) {
-			errormsg_size = length;
-			errormsg = (char *) malloc(length+1);
-		} else if (length > errormsg_size) {
-			errormsg_size = length;
-			errormsg = (char *) realloc((void*) errormsg, length+1);
-		}
-	strcpy(errormsg, message);
+		errormsg = (char *) malloc(length+1);
+		if (errormsg == NULL) return;
+		errormsg_size = length;
+	} else if (length > errormsg_size) {
+		char *tmp = (char *) realloc((void*) errormsg, length+1);
+		if (tmp == NULL) return;
+		errormsg = tmp;
+		errormsg_size = length;
+	}
+	memcpy(errormsg, message, length + 1);
 }
 
 char TSDRPLUGIN_API __stdcall * tsdrplugin_getlasterrortext(void) {
@@ -89,7 +92,8 @@ char TSDRPLUGIN_API __stdcall * tsdrplugin_getlasterrortext(void) {
 }
 
 void TSDRPLUGIN_API __stdcall tsdrplugin_getName(char * name) {
-	strcpy(name, "TSDR Raw File Source Plugin");
+	strncpy(name, "TSDR Raw File Source Plugin", 199);
+	name[199] = '\0';
 }
 
 uint32_t TSDRPLUGIN_API __stdcall tsdrplugin_setsamplerate(uint32_t rate) {
@@ -102,18 +106,15 @@ uint32_t TSDRPLUGIN_API __stdcall tsdrplugin_getsamplerate() {
 
 int TSDRPLUGIN_API __stdcall tsdrplugin_setbasefreq(uint32_t freq) {
 	RETURN_OK();
-	return 0; // to avoid getting warning from stupid Eclpse
 }
 
 int TSDRPLUGIN_API __stdcall tsdrplugin_stop(void) {
 	working = 0;
 	RETURN_OK();
-	return 0; // to avoid getting warning from stupid Eclpse
 }
 
 int TSDRPLUGIN_API __stdcall tsdrplugin_setgain(float gain) {
 	RETURN_OK();
-	return 0; // to avoid getting warning from stupid Eclpse
 }
 
 char * strtoken = NULL;
@@ -189,11 +190,12 @@ int TSDRPLUGIN_API __stdcall tsdrplugin_init(const char * params) {
 	} else
 		RETURN_EXCEPTION("Sample type is invalid. Pick one between float, int8, uint8, int16 or uint16.", TSDR_PLUGIN_PARAMETERS_WRONG);
 
-	strcpy(filename, fname);
+	free(filename);
+	filename = strdup(fname);
+	if (filename == NULL) RETURN_EXCEPTION("Out of memory", TSDR_PLUGIN_PARAMETERS_WRONG);
 	samplerate = (uint32_t) samplerate_l;
 
 	RETURN_OK();
-	return 0; // to avoid getting warning from stupid Eclpse
 }
 
 int TSDRPLUGIN_API __stdcall tsdrplugin_readasync(tsdrplugin_readasync_function cb, void *ctx) {
@@ -210,6 +212,12 @@ int TSDRPLUGIN_API __stdcall tsdrplugin_readasync(tsdrplugin_readasync_function 
 	const size_t bytestoread = SAMPLES_TO_READ_AT_ONCE * sizepersample;
 	char * buf = (char *) malloc(bytestoread);
 	float * outbuf = (float *) malloc(sizeof(float) * SAMPLES_TO_READ_AT_ONCE);
+	if (buf == NULL || outbuf == NULL) {
+		free(buf);
+		free(outbuf);
+		fclose(file);
+		RETURN_EXCEPTION("Out of memory", TSDR_ERR_PLUGIN);
+	}
 
 #if !PERFORMANCE_BENCHMARK
 	uint32_t delayms = (uint32_t) (TIME_STRETCH*1000.0f * (float) SAMPLES_TO_READ_AT_ONCE / (float) samplerate);
@@ -275,9 +283,9 @@ int TSDRPLUGIN_API __stdcall tsdrplugin_readasync(tsdrplugin_readasync_function 
 	fclose(file);
 
 	RETURN_OK();
-	return 0; // to avoid getting warning from stupid Eclpse
 }
 
 void TSDRPLUGIN_API __stdcall tsdrplugin_cleanup(void) {
-
+	free(filename);
+	filename = NULL;
 }

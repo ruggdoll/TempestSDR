@@ -202,8 +202,12 @@ void superb_run(superbandwidth_t * bw, float * iq, int size, tsdr_lib_t * tsdr, 
 			bw->buffscount = SUPER_HOPS_TO_MAKE;
 
 			bw->buffs = malloc(sizeof(float *) * bw->buffscount);
+			if (bw->buffs == NULL) return;
 			int i;
-			for (i = 0; i < bw->buffscount; i++) bw->buffs[i] = malloc(sizeof(float) * bw->samples_to_gather * 2);
+			for (i = 0; i < bw->buffscount; i++) {
+				bw->buffs[i] = malloc(sizeof(float) * bw->samples_to_gather * 2);
+				if (bw->buffs[i] == NULL) return;
+			}
 		}
 
 		bw->state = SUPER_STATE_GATHERING;

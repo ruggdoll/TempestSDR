@@ -32,18 +32,18 @@ static inline void announceexception(const char * message, int status) {
 
 	const int length = strlen(message);
 	if (errormsg_size == 0) {
+		errormsg = (char *)malloc(length + 1);
+		if (errormsg == NULL) return;
 		errormsg_size = length;
-		errormsg = (char *)malloc(errormsg_size + 1);
-		errormsg[errormsg_size] = 0;
 	}
 	else if (length > errormsg_size) {
+		char *tmp = (char *)realloc((void*)errormsg, length + 1);
+		if (tmp == NULL) return;
+		errormsg = tmp;
 		errormsg_size = length;
-		errormsg = (char *)realloc((void*)errormsg, errormsg_size + 1);
-		errormsg[errormsg_size] = 0;
 	}
 
-
-	strcpy(errormsg, message);
+	memcpy(errormsg, message, length + 1);
 }
 
 }
