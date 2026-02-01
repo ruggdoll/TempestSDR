@@ -84,7 +84,6 @@ public class TSDRFileSource extends TSDRSource {
 		}
 	}
 
-	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
 	public boolean populateGUI(final Container cont, final String defaultprefs, final ActionListenerRegistrator okbutton) {
 		
@@ -104,8 +103,8 @@ public class TSDRFileSource extends TSDRSource {
 	    cont.add(samplerate);
 	    samplerate.setBounds(12*2+150+100, 12+32, 150, 24);
 		
-		final JComboBox type = new JComboBox();
-		type.setModel(new DefaultComboBoxModel(filetype));
+		final JComboBox<String> type = new JComboBox<>();
+		type.setModel(new DefaultComboBoxModel<>(filetype));
 		type.setSelectedIndex(parsed.type_id);
 		type.setBounds(12*3+150+150+100, 12+32, 100, 24);
 		cont.add(type);

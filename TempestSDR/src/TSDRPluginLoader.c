@@ -21,7 +21,7 @@
 
 // A platform independent dynamic library loader
 
-void *tsdrplug_getfunction(pluginsource_t * plugin, char *functname)
+void *tsdrplug_getfunction(pluginsource_t * plugin, const char *functname)
 {
 #if WINHEAD
     return (void*)GetProcAddress((HINSTANCE)plugin->fd,functname);

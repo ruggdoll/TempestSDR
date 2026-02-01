@@ -11,7 +11,6 @@
 #-------------------------------------------------------------------------------
 */
 #include <stddef.h>
-#include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include "extbuffer.h"
@@ -108,8 +107,8 @@ void extbuffer_free(extbuffer_t * container) {
 	}
 }
 
-void extbuffer_dumptofile(extbuffer_t * container, int offset, char * filename, char * xname, char * yname) {
-	assert (container->valid);
+void extbuffer_dumptofile(extbuffer_t * container, int offset, const char * filename, const char * xname, const char * yname) {
+	if (!container->valid) return;
 
 	FILE *f = NULL;
 

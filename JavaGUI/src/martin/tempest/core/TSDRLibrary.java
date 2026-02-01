@@ -337,15 +337,6 @@ public class TSDRLibrary {
 		}
 	};
 	
-	@Override
-	protected void finalize() throws Throwable {
-		try {
-		Runtime.getRuntime().removeShutdownHook(unloaderhook);
-		} catch (Throwable e) {};
-		unloaderhook.run();
-		super.finalize();
-	}
-	
 	/**
 	 * Register the callback that will receive the decoded video frames
 	 * @param callback

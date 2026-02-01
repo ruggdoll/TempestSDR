@@ -110,8 +110,7 @@ public class Main implements TSDRLibrary.FrameReadyCallback, TSDRLibrary.Incomin
 	private JDialog deviceframe;
 	private JSpinner spWidth;
 	private JSpinner spHeight;
-	@SuppressWarnings("rawtypes")
-	private JComboBox cbVideoModes;
+	private JComboBox<VideoMode> cbVideoModes;
 	private JSpinner spFrequency;
 	private JLabel lblFrequency;
 	private JLabel lblWidth, lblHeight, lblFramerate, lblMotionBlur;
@@ -192,7 +191,6 @@ public class Main implements TSDRLibrary.FrameReadyCallback, TSDRLibrary.Incomin
 	/**
 	 * Initialize the contents of the frame.
 	 */
-	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private void initialize() {
 		final int width_initial = prefs.getInt(PREF_WIDTH, 576);
 		final int height_initial = prefs.getInt(PREF_HEIGHT, 625);
@@ -475,10 +473,10 @@ public class Main implements TSDRLibrary.FrameReadyCallback, TSDRLibrary.Incomin
 		btnReset.setBounds(749, 417, 41, 22);
 		frmTempestSdr.getContentPane().add(btnReset);
 		
-		cbVideoModes = new JComboBox();
+		cbVideoModes = new JComboBox<>();
 		cbVideoModes.setBounds(581, 70, 209, 22);
 		frmTempestSdr.getContentPane().add(cbVideoModes);
-		cbVideoModes.setModel(new DefaultComboBoxModel(videomodes));
+		cbVideoModes.setModel(new DefaultComboBoxModel<>(videomodes));
 		if (closest_videomode_id != -1 && closest_videomode_id < videomodes.length && closest_videomode_id >= 0) cbVideoModes.setSelectedIndex(closest_videomode_id);
 		
 		lblWidth = new JLabel("Width:");
@@ -802,7 +800,9 @@ public class Main implements TSDRLibrary.FrameReadyCallback, TSDRLibrary.Incomin
 			mSdrlib.setParam(PARAM.NEAREST_NEIGHBOUR_RESAMPLING, chckbxmntmNearestNeighbourResampling.isSelected() ? 1 : 0);
 			mSdrlib.setParam(PARAM.LOW_PASS_BEFORE_SYNC, chckbxmntmLowpassBeforeSync.isSelected() ? 1 : 0);
 			mSdrlib.setParam(PARAM.AUTOGAIN_AFTER_PROCESSING, chckbxmntmAutoCorrectAfterProc.isSelected() ? 1 : 0);
-		} catch (TSDRException e1) {}
+		} catch (TSDRException e1) {
+			e1.printStackTrace();
+		}
 	}
 	
 	private void onVideoModeSelected(final int modeid) {
@@ -1117,8 +1117,10 @@ public class Main implements TSDRLibrary.FrameReadyCallback, TSDRLibrary.Incomin
 		if (!mSdrlib.isRunning()) btnStartStop.setEnabled(false);
 		try {
 			mSdrlib.unloadPlugin();
-		} catch (TSDRException e) {};
-		
+		} catch (TSDRException e) {
+			e.printStackTrace();
+		}
+
 		pnInputDeviceSettings.removeAll();
 		pnInputDeviceSettings.revalidate();
 		pnInputDeviceSettings.repaint(); 
@@ -1227,7 +1229,9 @@ public class Main implements TSDRLibrary.FrameReadyCallback, TSDRLibrary.Incomin
 		try {
 			try {
 				mSdrlib.unloadPlugin();
-			} catch (TSDRLoadPluginException e) {};
+			} catch (TSDRLoadPluginException e) {
+				e.printStackTrace();
+			}
 			
 			mSdrlib.loadPlugin(source);
 		} catch (Throwable t) {

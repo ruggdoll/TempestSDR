@@ -15,7 +15,6 @@
 #include "include/TSDRCodes.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <assert.h>
 #include "TSDRPluginLoader.h"
 #include "osdetect.h"
 #include "threading.h"
@@ -95,6 +94,7 @@ void tsdr_init(tsdr_lib_t ** tsdr, tsdr_value_changed_callback callback, tsdr_on
 }
 
 void tsdr_free(tsdr_lib_t ** tsdr) {
+	if (tsdr == NULL || *tsdr == NULL) return;
 	(*tsdr)->callback = NULL;
 	(*tsdr)->plotready_callback = NULL;
 
@@ -156,6 +156,7 @@ static inline void announceexception(tsdr_lib_t * tsdr, const char * message, in
 }
 
  char * tsdr_getlasterrortext(tsdr_lib_t * tsdr) {
+	if (tsdr == NULL) return NULL;
 	if (tsdr->errormsg_code == TSDR_OK)
 		return NULL;
 	else
@@ -175,14 +176,17 @@ static inline void announceexception(tsdr_lib_t * tsdr, const char * message, in
 }
 
  void * tsdr_getctx(tsdr_lib_t * tsdr) {
+	 if (tsdr == NULL) return NULL;
 	 return tsdr->callbackctx;
  }
 
  int tsdr_isrunning(tsdr_lib_t * tsdr) {
+	if (tsdr == NULL) return 0;
 	return tsdr->nativerunning;
 }
 
  int tsdr_getsamplerate(tsdr_lib_t * tsdr) {
+	if (tsdr == NULL) return TSDR_INVALID_PARAMETER;
 	if (!tsdr->plugin.initialized) RETURN_EXCEPTION(tsdr, "Cannot change sample rate. Plugin not loaded yet.", TSDR_ERR_PLUGIN);
 
 	tsdr->samplerate_real = tsdr->plugin.tsdrplugin_getsamplerate();
@@ -195,6 +199,7 @@ static inline void announceexception(tsdr_lib_t * tsdr, const char * message, in
 }
 
  int tsdr_setbasefreq(tsdr_lib_t * tsdr, uint32_t freq) {
+	if (tsdr == NULL) return TSDR_INVALID_PARAMETER;
 	tsdr->centfreq = freq;
 
 	if (tsdr->plugin.initialized) {
@@ -211,6 +216,7 @@ void shiftfreq(tsdr_lib_t * tsdr, int32_t diff) {
 }
 
  int tsdr_stop(tsdr_lib_t * tsdr) {
+	if (tsdr == NULL) return TSDR_INVALID_PARAMETER;
 	if (!tsdr->running) RETURN_OK(tsdr);
 	int status = tsdr->plugin.tsdrplugin_stop();
 
@@ -222,7 +228,7 @@ void shiftfreq(tsdr_lib_t * tsdr, int32_t diff) {
 }
 
  int tsdr_setgain(tsdr_lib_t * tsdr, float gain) {
-
+	if (tsdr == NULL) return TSDR_INVALID_PARAMETER;
 
 	tsdr->gain = gain;
 
@@ -258,7 +264,7 @@ static inline void am_demod(float * buffer, int size) {
 }
 
 void process(float *buf, uint64_t items_count, void *ctx, int64_t samples_dropped) {
-	assert((items_count & 1) == 0);
+	if ((items_count & 1) != 0) return;
 
 	tsdr_context_t * context = (tsdr_context_t *) ctx;
 
@@ -419,6 +425,7 @@ void unloadplugin(tsdr_lib_t * tsdr) {
 }
 
 int tsdr_unloadplugin(tsdr_lib_t * tsdr) {
+	if (tsdr == NULL) return TSDR_INVALID_PARAMETER;
 	if (!tsdr->plugin.initialized) RETURN_EXCEPTION(tsdr, "No plugin has been loaded so it can't be unloaded", TSDR_ERR_PLUGIN);
 
 	if (tsdr->nativerunning || tsdr->running)
@@ -429,6 +436,7 @@ int tsdr_unloadplugin(tsdr_lib_t * tsdr) {
 }
 
 int tsdr_loadplugin(tsdr_lib_t * tsdr, const char * pluginfilepath, const char * params) {
+	if (tsdr == NULL) return TSDR_INVALID_PARAMETER;
 	if (tsdr->nativerunning || tsdr->running)
 			RETURN_EXCEPTION(tsdr, "The library is already running in async mode. Stop it first!", TSDR_ALREADY_RUNNING);
 
@@ -455,6 +463,7 @@ int tsdr_loadplugin(tsdr_lib_t * tsdr, const char * pluginfilepath, const char *
 }
 
  int tsdr_readasync(tsdr_lib_t * tsdr, tsdr_readasync_function cb, void * ctx) {
+	 if (tsdr == NULL) return TSDR_INVALID_PARAMETER;
 	 int pluginsfault = 0;
 
 	if (tsdr->nativerunning || tsdr->running)
@@ -545,6 +554,7 @@ end:
  }
 
  int tsdr_setresolution(tsdr_lib_t * tsdr, int height, double refreshrate) {
+	if (tsdr == NULL) return TSDR_INVALID_PARAMETER;
 	if (height <= 0 || refreshrate <= 0)
 		RETURN_EXCEPTION(tsdr, "The supplied height is invalid or refreshrate is negative!", TSDR_WRONG_VIDEOPARAMS);
 
@@ -559,12 +569,14 @@ end:
 
 
  int tsdr_motionblur(tsdr_lib_t * tsdr, float coeff) {
+	if (tsdr == NULL) return TSDR_INVALID_PARAMETER;
 	if (coeff < 0.0f || coeff > 1.0f) return TSDR_WRONG_VIDEOPARAMS;
 	tsdr->motionblur = coeff;
 	RETURN_OK(tsdr);
 }
 
  int tsdr_sync(tsdr_lib_t * tsdr, int pixels, int direction) {
+	if (tsdr == NULL) return TSDR_INVALID_PARAMETER;
 	if (pixels == 0) return TSDR_OK;
 	switch(direction) {
 	case DIRECTION_CUSTOM:
@@ -591,6 +603,7 @@ end:
 }
 
 int tsdr_setparameter_int(tsdr_lib_t * tsdr, int parameter, uint32_t value) {
+	if (tsdr == NULL) return TSDR_INVALID_PARAMETER;
 	if (parameter < 0 || parameter >= COUNT_PARAM_INT)
 		RETURN_EXCEPTION(tsdr, "Invalid integer parameter id", TSDR_INVALID_PARAMETER);
 	tsdr->params_int[parameter] = value;
@@ -598,6 +611,7 @@ int tsdr_setparameter_int(tsdr_lib_t * tsdr, int parameter, uint32_t value) {
 }
 
 int tsdr_setparameter_double(tsdr_lib_t * tsdr, int parameter, double value) {
+	if (tsdr == NULL) return TSDR_INVALID_PARAMETER;
 	if (parameter < 0 || parameter >= COUNT_PARAM_DOUBLE)
 		RETURN_EXCEPTION(tsdr, "Invalid double floating point parameter id", TSDR_INVALID_PARAMETER);
 	tsdr->params_double[parameter] = value;

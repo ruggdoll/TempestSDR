@@ -40,7 +40,7 @@ void extbuffer_init(extbuffer_t * container);
 void extbuffer_init_double(extbuffer_t * container);
 void extbuffer_preparetohandle(extbuffer_t * container, uint32_t size);
 void extbuffer_cleartozero(extbuffer_t * container);
-void extbuffer_dumptofile(extbuffer_t * container, int offset, char * filename, char * xname, char * yname);
+void extbuffer_dumptofile(extbuffer_t * container, int offset, const char * filename, const char * xname, const char * yname);
 void extbuffer_free(extbuffer_t * container);
 
 
