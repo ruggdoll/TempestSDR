@@ -103,7 +103,7 @@ public class Main implements TSDRLibrary.FrameReadyCallback, TSDRLibrary.Incomin
 	private final static String PREF_LOW_PASS_BEFORE_SYNC = "lp_before_sync";
 	private final static String PREF_AUTOGAIN_AFTER_PROC = "auto_bf_proc";
 
-	private final SpinnerModel frequency_spinner_model = new SpinnerNumberModel(new Long(prefs.getLong(PREF_FREQ, 400000000)), new Long(0), new Long(2147483647), new Long(FREQUENCY_STEP));
+	private final SpinnerModel frequency_spinner_model = new SpinnerNumberModel(new Long(prefs.getLong(PREF_FREQ, 400000000)), new Long(0), new Long(3000000000L), new Long(FREQUENCY_STEP));
 	
 	private JFrame frmTempestSdr;
 	private JFrame fullscreenframe;
